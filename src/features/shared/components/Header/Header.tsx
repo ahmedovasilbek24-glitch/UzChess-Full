@@ -7,6 +7,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import AuthModal from "@/features/shared/components/AuthModal/AuthModal";
 import { X, GraduationCap, BookOpen } from "lucide-react";
+import { useBreadcrumb } from "@/features/shared/context/BreadcrumbContext";
 
 interface Language {
   id: number;
@@ -59,6 +60,7 @@ export default function Header() {
 
   const pathname = usePathname() || "";
   const router = useRouter();
+  const { label: breadcrumbExtra } = useBreadcrumb();
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -393,14 +395,20 @@ export default function Header() {
             <img src="/home1.png" alt="home" className="w-4 h-4" />
             <span>Asosiy</span>
             <img src="/chess.png" alt="arrow" className="w-3 h-3" />
-            <span className="text-white">
+            <span className={breadcrumbExtra ? "text-gray-500" : "text-white"}>
               {pathname === '/' ? 'Asosiy'
                 : pathname === '/news' ? 'Yangiliklar'
                 : pathname === '/courses' ? 'Kurslar'
-                : pathname === '/library' ? 'Kutubxona'
+                : (pathname === '/library' || pathname.startsWith('/library/')) ? 'Kutubxona'
                 : pathname === '/contact' ? "Bog'lanish"
                 : ''}
             </span>
+            {breadcrumbExtra && (
+              <>
+                <img src="/chess.png" alt="arrow" className="w-3 h-3" />
+                <span className="text-white line-clamp-1 max-w-[420px]">{breadcrumbExtra}</span>
+              </>
+            )}
           </div>
         </div>
       </header>

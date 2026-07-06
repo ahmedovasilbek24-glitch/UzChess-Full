@@ -1,12 +1,15 @@
 'use client';
 
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {useParams, useRouter} from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
+import {Great_Vibes} from 'next/font/google';
 import {ChevronRight, Download, Star} from 'lucide-react';
 import YouthCard from '@/features/shared/components/YouthCard/YouthCard';
+import {getStoredUser} from '@/lib/user';
 import axios from 'axios';
+
+const greatVibes = Great_Vibes({subsets: ['latin'], weight: '400'});
 
 const BASE = 'http://localhost:3002';
 
@@ -19,9 +22,10 @@ function norm(src?: string) {
 export default function CertificatePage() {
     const {id} = useParams<{ id: string }>();
     const router = useRouter();
+    const certificateRef = useRef<HTMLDivElement>(null);
 
     const [course, setCourse] = useState<any>(null);
-    const [certificateUrl, setCertificateUrl] = useState<string>('');
+    const [userName, setUserName] = useState('Foydalanuvchi');
     const [rating, setRating] = useState(0);
     const [hoverRating, setHoverRating] = useState(0);
     const [comment, setComment] = useState('');
@@ -33,15 +37,12 @@ export default function CertificatePage() {
     useEffect(() => {
         async function load() {
             try {
-                const token = localStorage.getItem('token');
-                const headers: Record<string, string> = token ? {Authorization: `Bearer ${token}`} : {};
-
                 const cRes = await fetch(`${BASE}/public/courses/${id}`, {cache: 'no-store'});
                 const cData = await cRes.json();
                 setCourse(cData);
 
-                /* Sertifikat frontend public ichidan olinadi */
-                setCertificateUrl('/Certificate.png');
+                const stored = getStoredUser();
+                if (stored?.fullName) setUserName(stored.fullName);
             } catch {
             } finally {
                 setLoading(false);
@@ -52,18 +53,16 @@ export default function CertificatePage() {
     }, [id]);
 
     async function handleDownload() {
+        if (!certificateRef.current) return;
         setDownloading(true);
         try {
-            const res = await fetch('/Certificate.png');
-            const blob = await res.blob();
-            const url = URL.createObjectURL(blob);
+            const {toPng} = await import('html-to-image');
+            const dataUrl = await toPng(certificateRef.current, {pixelRatio: 2});
             const a = document.createElement('a');
-            a.href = url;
+            a.href = dataUrl;
             a.download = 'Certificate.png';
             a.click();
-            URL.revokeObjectURL(url);
         } catch {
-            window.open('/Certificate.png', '_blank');
         } finally {
             setDownloading(false);
         }
@@ -105,63 +104,43 @@ export default function CertificatePage() {
                         <div
                             className="bg-[#0D1628] rounded-2xl border border-[#1d2733] px-8 py-10 flex flex-col items-center text-center gap-5">
                             {/* Certificate preview */}
-                            <div className="w-full max-w-md relative">
-                                {certificateUrl ? (
-                                    <Image
-                                        src={certificateUrl}
-                                        alt="Sertifikat"
-                                        width={800}
-                                        height={560}
-                                        quality={100}
-                                        unoptimized
-                                        className="w-full h-auto rounded-xl shadow-2xl"
-                                    />
-                                ) : (
-                                    /* Placeholder certificate */
-                                    <div
-                                        className="w-full aspect-[4/3] rounded-xl border-4 border-yellow-400/40 bg-gradient-to-br from-[#1A2535] to-[#0D1628] flex flex-col items-center justify-center gap-3 relative overflow-hidden shadow-2xl">
-                                        {/* Corner decorations */}
-                                        <div
-                                            className="absolute top-0 left-0 w-16 h-16 border-t-4 border-l-4 border-yellow-400/60 rounded-tl-xl"/>
-                                        <div
-                                            className="absolute top-0 right-0 w-16 h-16 border-t-4 border-r-4 border-yellow-400/60 rounded-tr-xl"/>
-                                        <div
-                                            className="absolute bottom-0 left-0 w-16 h-16 border-b-4 border-l-4 border-yellow-400/60 rounded-bl-xl"/>
-                                        <div
-                                            className="absolute bottom-0 right-0 w-16 h-16 border-b-4 border-r-4 border-yellow-400/60 rounded-br-xl"/>
+                            <div className="w-full max-w-md">
+                                <div ref={certificateRef} className="relative w-full aspect-[842/595] bg-[#F7F9FA] rounded-xl overflow-hidden shadow-2xl" style={{containerType: 'inline-size'}}>
+                                    <img src="/certificate/pattern-left.png" alt="" className="absolute left-0 top-0 object-cover" style={{width: '8.5%', height: '100%'}} />
+                                    <img src="/certificate/pattern-right.png" alt="" className="absolute right-0 top-0 object-cover" style={{width: '8.5%', height: '100%'}} />
+                                    <img src="/certificate/border.png" alt="" className="absolute inset-0 w-full h-full" />
 
-                                        {/* Logo */}
-                                        <div className="flex items-center gap-0.5">
-                                            <span className="text-[#4EBAF7] font-bold text-xl">Uz</span>
-                                            <span className="text-white font-bold text-xl">Chess</span>
-                                        </div>
+                                    <img src="/certificate/logo.svg" alt="UzChess" className="absolute" style={{left: '41.2%', top: '11.1%', width: '17.6%', height: 'auto'}} />
 
-                                        {/* Decorative line */}
-                                        <div className="w-24 h-px bg-yellow-400/40"/>
-
-                                        {/* Name placeholder */}
-                                        <div className="text-center px-6">
-                                            <p className="text-gray-400 text-xs mb-1">Bu sertifikat taqdim etiladi</p>
-                                            <p className="text-white font-semibold text-lg italic">
-                                                {course?.author ?? 'Foydalanuvchi'}
-                                            </p>
-                                        </div>
-
-                                        {/* Course name */}
-                                        <div className="text-center px-4">
-                                            <p className="text-gray-400 text-xs">{course?.title}</p>
-                                        </div>
-
-                                        {/* Seal */}
-                                        <div
-                                            className="w-14 h-14 rounded-full border-2 border-[#2196F3]/60 flex items-center justify-center">
-                                            <div
-                                                className="w-10 h-10 rounded-full border border-[#2196F3]/40 flex items-center justify-center">
-                                                <span className="text-[#2196F3] text-xs font-bold">UzC</span>
-                                            </div>
-                                        </div>
+                                    <div className="absolute text-center" style={{left: '50%', top: '40.5%', width: '59%', transform: 'translateX(-50%)'}}>
+                                        <p className={`${greatVibes.className} text-[#13181C] leading-none`} style={{fontSize: '7.5cqw'}}>
+                                            {userName}
+                                        </p>
+                                        <div className="mx-auto mt-1 border-b-[3px] border-[#1C92E0]" style={{width: '100%'}} />
                                     </div>
-                                )}
+
+                                    <div className="absolute text-center" style={{left: '18.6%', top: '50%', width: '62.7%'}}>
+                                        <p className="text-[#1A1D1F]" style={{fontSize: '1.8cqw'}}>
+                                            UzChess platformasidagi &ldquo;{course?.title ?? 'kurs'}&rdquo; kursini muvaffaqiyatli yakunlagani uchun maxsus sertifikat bilan taqdirlanadi!
+                                        </p>
+                                        <p className="text-[#9DA1A3] mt-1" style={{fontSize: '1.6cqw'}}>
+                                            {(() => {
+                                                const d = new Date();
+                                                const pad = (n: number) => String(n).padStart(2, '0');
+                                                return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`;
+                                            })()}
+                                        </p>
+                                    </div>
+
+                                    <img src="/certificate/qr.png" alt="QR" className="absolute" style={{left: '15%', top: '76.5%', width: '9.5%', height: 'auto'}} />
+                                    <img src="/certificate/seal.png" alt="Muhr" className="absolute" style={{left: '44.3%', top: '73.8%', width: '11.4%', height: 'auto'}} />
+
+                                    <div className="absolute flex flex-col items-center" style={{left: '66.5%', top: '74.8%', width: '18.5%'}}>
+                                        <img src="/certificate/signature.svg" alt="Imzo" style={{width: '65%', height: 'auto'}} />
+                                        <div className="w-full border-t border-[#383C57]" />
+                                        <p className="text-[#383C57] mt-0.5" style={{fontSize: '1.5cqw'}}>Sa&apos;dullayev A. Z.</p>
+                                    </div>
+                                </div>
                             </div>
 
                             <h1 className="text-white font-bold text-2xl leading-snug">

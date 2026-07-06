@@ -36,6 +36,7 @@ interface Course {
 
 interface Props {
     course: Course;
+    index?: number;
 }
 
 function normalizeImageSrc(image?: string) {
@@ -48,9 +49,18 @@ function normalizeImageSrc(image?: string) {
         : `http://localhost:3002/${normalized}`;
 }
 
-export default function CourseCard({ course }: Props) {
+const FALLBACK_THUMBS = [
+    "/courses/course-thumb-1.png",
+    "/courses/course-thumb-2.png",
+    "/courses/course-thumb-3.png",
+    "/courses/course-thumb-4.png",
+];
+
+export default function CourseCard({ course, index = 0 }: Props) {
     const [liked, setLiked] = useState(() => isSavedCourse(course.id) || (course.isLiked ?? false));
     const [loading, setLoading] = useState(false);
+    const fallbackThumb = FALLBACK_THUMBS[index % FALLBACK_THUMBS.length];
+    const [thumbSrc, setThumbSrc] = useState(() => normalizeImageSrc(course.image) || fallbackThumb);
     async function handleLike(
         e: React.MouseEvent<HTMLButtonElement>
     ) {
@@ -93,14 +103,22 @@ export default function CourseCard({ course }: Props) {
                     style={{ width: '280px', height: '190px' }}
                 >
                     <Image
-                        src={normalizeImageSrc(course.image)}
+                        src={thumbSrc}
                         alt={course.title}
                         fill
                         className="object-cover"
+                        onError={() => setThumbSrc(fallbackThumb)}
+                        onLoad={(e) => {
+                            const img = e.target as HTMLImageElement;
+                            if (img.naturalWidth > 0 && img.naturalWidth < 50) {
+                                setThumbSrc(fallbackThumb);
+                            }
+                        }}
                     />
 
-                    <div className="absolute top-3 left-2 bg-black/70 text-yellow-400 text-xs px-2.5 py-1 rounded-lg font-semibold backdrop-blur-sm">
-                        ⭐ {course.rating}
+                    <div className="absolute top-3 left-2 bg-[#0B1418] text-white text-xs px-2.5 py-1 rounded-lg font-semibold flex items-center gap-1">
+                        <Image src="/star-icon.svg" alt="rating" width={13} height={12} />
+                        {course.rating}
                     </div>
 
                     <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2.5 py-1 rounded-lg backdrop-blur-sm font-medium">
@@ -137,14 +155,12 @@ export default function CourseCard({ course }: Props) {
                         <div className="flex flex-wrap items-center gap-4 mt-4 text-[#8A8F98] text-sm">
 
                             <div className="flex items-center gap-2">
-                                {course.difficulty?.icon && (
-                                    <Image
-                                        src={normalizeImageSrc(course.difficulty.icon)}
-                                        alt="difficulty"
-                                        width={20}
-                                        height={20}
-                                    />
-                                )}
+                                <Image
+                                    src="/difficulty-icon.svg"
+                                    alt="difficulty"
+                                    width={20}
+                                    height={20}
+                                />
 
                                 <span>
                                     {course.difficulty?.title}
@@ -153,10 +169,10 @@ export default function CourseCard({ course }: Props) {
 
                             <div className="flex items-center gap-2">
                                 <Image
-                                    src="/student_center.png"
+                                    src="/student-center-icon.svg"
                                     alt="lessons"
-                                    width={16}
-                                    height={16}
+                                    width={20}
+                                    height={20}
                                 />
 
                                 <span>
@@ -166,10 +182,10 @@ export default function CourseCard({ course }: Props) {
 
                             <div className="flex items-center gap-2">
                                 <Image
-                                    src="/grid1.png"
+                                    src="/grid-icon.svg"
                                     alt="category"
-                                    width={16}
-                                    height={16}
+                                    width={20}
+                                    height={20}
                                 />
 
                                 <span>

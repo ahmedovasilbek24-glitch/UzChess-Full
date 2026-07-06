@@ -4,7 +4,19 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="25b28adf-8a23-44b5-8ec0-4f9e8e9a09c6" name="Changes" comment="" />
+    <list default="true" id="25b28adf-8a23-44b5-8ec0-4f9e8e9a09c6" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/courses/[id]/certificate/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/courses/[id]/certificate/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/courses/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/courses/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/library/[id]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/library/[id]/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/features/course/components/CourseCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/features/course/components/CourseCard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/features/course/components/CourseDetail.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/features/course/components/CourseDetail.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/features/library/components/BookDetail.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/features/library/components/BookDetail.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/features/shared/components/Header/Header.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/features/shared/components/Header/Header.tsx" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -150,7 +162,8 @@
       <workItem from="1782903701790" duration="1226000" />
       <workItem from="1782909549839" duration="798000" />
       <workItem from="1783057654166" duration="14524000" />
-      <workItem from="1783079914908" duration="309000" />
+      <workItem from="1783079914908" duration="9584000" />
+      <workItem from="1783239703820" duration="7664000" />
     </task>
     <servers />
   </component>

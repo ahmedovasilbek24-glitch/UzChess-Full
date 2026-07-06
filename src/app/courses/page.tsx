@@ -111,8 +111,8 @@ export default function CoursePage() {
                         ) : filteredCourses.length > 0 ? (
                             <>
                                 <div className="flex flex-col gap-4">
-                                    {filteredCourses.slice(0, visibleCount).map((course) => (
-                                        <CourseCard key={course.id} course={course}/>
+                                    {filteredCourses.slice(0, visibleCount).map((course, index) => (
+                                        <CourseCard key={course.id} course={course} index={index}/>
                                     ))}
                                 </div>
 

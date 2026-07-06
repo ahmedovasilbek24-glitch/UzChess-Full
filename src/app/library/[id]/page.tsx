@@ -31,6 +31,24 @@ async function getBookData(id: string) {
 
         const book = bookRes.data?.data ?? bookRes.data;
 
+        const allBooks = Array.isArray(topBooksRes.data?.data)
+            ? topBooksRes.data.data
+            : Array.isArray(topBooksRes.data)
+                ? topBooksRes.data
+                : [];
+
+        // /public/book/:id doesn't populate author/difficulty/language/category relations,
+        // but /public/book (list) does — backfill from there.
+        if (book) {
+            const listVersion = allBooks.find((b: any) => Number(b.id) === Number(book.id));
+            if (listVersion) {
+                book.author = book.author ?? listVersion.author;
+                book.difficulty = book.difficulty ?? listVersion.difficulty;
+                book.language = book.language ?? listVersion.language;
+                book.category = book.category ?? listVersion.category;
+            }
+        }
+
         const reviews = Array.isArray(reviewsRes.data?.data)
             ? reviewsRes.data.data
             : Array.isArray(reviewsRes.data)

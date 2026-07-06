@@ -5,9 +5,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import {
-    Star, Bookmark, Share2,
-    ChevronUp, ChevronDown, Award, Check, Play,
-    User, BookOpen, PlayCircle,
+    Bookmark,
+    Award, Play,
 } from "lucide-react";
 
 import CourseReviews from "./CourseReviews";
@@ -23,6 +22,12 @@ interface Lesson {
     thumbnail: string | null; video: string; isFree: boolean;
     order: number | null; duration?: number;
 }
+
+const LESSON_THUMBS = [
+    "/lessons/lesson-thumb-1.png",
+    "/lessons/lesson-thumb-2.png",
+    "/lessons/lesson-thumb-3.png",
+];
 
 function norm(image?: string) {
     if (!image) return "";
@@ -138,40 +143,19 @@ export default function CourseDetail({ course }: Props) {
     const isFree = newPrice === 0;
     const hasDiscount = !isFree && course.newPrice && course.price && newPrice !== oldPrice;
 
-    const payMethods: { id: PayMethod; logo: React.ReactNode }[] = [
-        { id: "paylov", logo: <span className="text-sm font-bold text-white tracking-wide">Paylov</span> },
-        { id: "payme",  logo: <span className="text-sm font-bold text-white">Pay<span className="text-green-400">me</span></span> },
-        { id: "click",  logo: (
-            <span className="flex items-center gap-1">
-                <span className="w-5 h-5 rounded-full bg-[#2196F3] flex items-center justify-center flex-shrink-0">
-                    <svg viewBox="0 0 20 20" className="w-3 h-3 text-white" fill="currentColor"><circle cx="10" cy="10" r="4"/></svg>
-                </span>
-                <span className="text-sm font-bold text-white">click<sup className="text-[9px] text-blue-300">UP</sup></span>
-            </span>
-        )},
-        { id: "uzum",   logo: (
-            <span className="flex items-center gap-1.5">
-                <span className="w-5 h-5 rounded-full bg-[#1A1A2E] border border-[#333] flex items-center justify-center flex-shrink-0 text-[9px] font-bold text-white">U</span>
-                <span className="text-sm font-bold text-white leading-tight">uzum<br/><span className="text-[10px] font-normal text-gray-400">bank</span></span>
-            </span>
-        )},
+    const payMethods: { id: PayMethod; logo: string; w: number; h: number }[] = [
+        { id: "paylov", logo: "/payments/paylov-logo.svg", w: 61, h: 20 },
+        { id: "payme",  logo: "/payments/payme-logo.svg", w: 70, h: 24 },
+        { id: "click",  logo: "/payments/click-logo.svg", w: 71, h: 24 },
+        { id: "uzum",   logo: "/payments/uzum-logo.svg", w: 60, h: 24 },
     ];
 
-    const courseBody = course?.description || course?.content || course?.about || course?.summary || "Bu kurs orqali siz shaxmatning asosiy tamoyillarini, amaliy mashqlarni va ko'nikmalarni o'rganasiz. Har bir bo'limda video darslar, topshiriqlar va nazorat testlari mavjud.";
-    const overviewPoints = Array.isArray(course?.learningPoints)
-        ? course.learningPoints
-        : [
-            "Boshlang'ichdan murakkab darajagacha bo'lgan darslar",
-            "Amaliy mashqlar va real vaziyatlar bilan ishlash",
-            "Video darslar orqali o'rganish",
-            "Sertifikat bilan yakunlash",
-        ];
 
     return (
         <>
             <div className="min-h-screen bg-black text-white">
                 <div className="mx-auto max-w-7xl px-4 py-6 lg:px-6">
-                    <div className="relative mb-8 overflow-hidden rounded-[28px] border border-[#1d2733] bg-[#0d1117]">
+                    <div className="relative mb-8 min-h-[194px] overflow-hidden rounded-[28px] border border-[#1d2733] bg-[#0d1117]">
                         <div className="absolute inset-0">
                             {course.image && (
                                 <Image src={norm(course.image)} alt={course.title} fill priority unoptimized className="object-cover" />
@@ -179,68 +163,76 @@ export default function CourseDetail({ course }: Props) {
                         </div>
                         <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/40" />
 
-                        <div className="relative z-10 flex flex-col gap-6 px-6 py-8 md:px-8 lg:flex-row lg:items-end lg:justify-between lg:px-10 lg:py-10">
-                            <div className="max-w-2xl">
-                                <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#2A2D35] bg-[#0D0D0D]/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#9CA3AF]">
-                                    <span className="h-2 w-2 rounded-full bg-[#2EA6FF]" />
-                                    UzChess kursi
+                        <div className="relative z-10 flex h-full flex-col justify-between gap-6 px-6 py-8 md:px-8">
+                            <div className="flex flex-col items-start justify-between gap-4 lg:flex-row lg:items-start">
+                                <div>
+                                    <h1 className="text-[32px] font-bold leading-tight text-white">{course.title}</h1>
+                                    <div className="mt-3 flex flex-wrap items-center gap-6">
+                                        <div className="flex items-center gap-2">
+                                            <Image src="/wallet-icon.svg" alt="price" width={28} height={28} />
+                                            {isFree ? (
+                                                <span className="text-xl font-bold text-green-400">Bepul</span>
+                                            ) : (
+                                                <span className="text-xl font-bold text-white">{fmtPrice(newPrice)} uzs</span>
+                                            )}
+                                        </div>
+                                        {hasDiscount && (
+                                            <span className="text-sm text-white line-through decoration-[#DC2D2D]">{fmtPrice(oldPrice)} uzs</span>
+                                        )}
+                                    </div>
                                 </div>
-                                <h1 className="text-3xl font-bold leading-tight text-white sm:text-4xl">{course.title}</h1>
-                                <p className="mt-4 text-[15px] leading-7 text-[#D4D9E2]">
-                                    {course.description || course.summary || "Bu kurs orqali siz shaxmatning asosiy tamoyillarini chuqur o'rganasiz, amaliy darslar orqali bilimlaringizni mustahkamlaysiz."}
-                                </p>
 
-                                <div className="mt-6 flex flex-wrap items-center gap-3 text-sm text-[#C6CEDD]">
-                                    <div className="flex items-center gap-2 rounded-full border border-[#2A2D35] bg-[#10151C]/80 px-3 py-2">
-                                        <User size={14} className="text-[#2EA6FF]" />
-                                        <span>{course.author || "UzChess jamoasi"}</span>
+                                <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-1">
+                                        {Array.from({ length: 5 }).map((_, i) => (
+                                            <Image
+                                                key={i}
+                                                src={i < Math.round(Number(course.rating)) ? "/star-filled.svg" : "/star-empty.svg"}
+                                                alt="star"
+                                                width={21}
+                                                height={20}
+                                            />
+                                        ))}
                                     </div>
-                                    <div className="flex items-center gap-2 rounded-full border border-[#2A2D35] bg-[#10151C]/80 px-3 py-2">
-                                        <BookOpen size={14} className="text-[#2EA6FF]" />
-                                        <span>{course.sectionsCount ?? sections.length} bo'lim</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 rounded-full border border-[#2A2D35] bg-[#10151C]/80 px-3 py-2">
-                                        <PlayCircle size={14} className="text-[#2EA6FF]" />
-                                        <span>{course.lessonsCount ?? lessons.length} dars</span>
+                                    <div className="h-4 w-px bg-[#1A2226]" />
+                                    <div className="flex items-baseline gap-2">
+                                        <span className="text-xl font-medium text-white">{course.rating}</span>
+                                        <span className="text-sm text-[#6D7275]">(234 ta izoh)</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="flex flex-col items-start gap-3 rounded-[24px] border border-[#1F2937] bg-[#0D0D0D]/80 p-5 backdrop-blur-sm lg:items-end">
-                                <div className="flex items-center gap-1">
-                                    {Array.from({ length: 5 }).map((_, i) => (
-                                        <Star key={i} size={16}
-                                            fill={i < Math.round(Number(course.rating)) ? "#FACC15" : "none"}
-                                            className={i < Math.round(Number(course.rating)) ? "text-yellow-400" : "text-slate-600"}
-                                        />
-                                    ))}
-                                    <span className="ml-2 text-sm font-semibold text-white">{course.rating}</span>
+                            <div className="flex flex-col items-start justify-between gap-4 lg:flex-row lg:items-end">
+                                <div className="flex flex-wrap items-center gap-6 text-sm text-white">
+                                    <div className="flex items-center gap-2">
+                                        <Image src="/difficulty-icon.svg" alt="difficulty" width={24} height={24} />
+                                        <span>{course.difficulty?.title || "Boshlang'ich"}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Image src="/student-center-icon.svg" alt="sections" width={24} height={24} />
+                                        <span>{course.sectionsCount ?? sections.length} ta bo'lim</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Image src="/play-icon.svg" alt="lessons" width={24} height={24} />
+                                        <span>{course.lessonsCount ?? lessons.length} ta dars</span>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-2 text-lg font-semibold text-white">
-                                    {isFree ? (
-                                        <span className="text-green-400">Bepul</span>
-                                    ) : (
-                                        <>
-                                            <span>{fmtPrice(newPrice)} UZS</span>
-                                            {hasDiscount && <span className="text-sm text-gray-400 line-through">{fmtPrice(oldPrice)} UZS</span>}
-                                        </>
-                                    )}
-                                </div>
-                                <div className="flex items-center gap-2">
+
+                                <div className="flex items-center gap-3">
                                     {isPurchased ? (
-                                        <button onClick={() => router.push(`/courses/${course.id}/certificate`)} className="rounded-xl bg-[#2EA6FF] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1D90E0] transition-colors">
-                                            <span className="flex items-center gap-2"><Award size={15} /> Sertifikat</span>
+                                        <button onClick={() => router.push(`/courses/${course.id}/certificate`)} className="flex h-[50px] items-center gap-2 rounded-xl bg-[#1C92E0] px-8 text-[20px] font-medium text-white hover:bg-[#1876b8] transition-colors">
+                                            <Award size={18} /> Sertifikat
                                         </button>
                                     ) : (
-                                        <button onClick={openBuy} className="rounded-xl bg-[#2EA6FF] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1D90E0] transition-colors">
+                                        <button onClick={openBuy} className="h-[50px] rounded-xl bg-[#1C92E0] px-8 text-[20px] font-medium text-white hover:bg-[#1876b8] transition-colors">
                                             Kursni sotib olish
                                         </button>
                                     )}
-                                    <button onClick={handleSave} className={`flex h-10 w-10 items-center justify-center rounded-xl border transition-colors ${saved ? "border-[#2EA6FF] bg-[#2EA6FF]" : "border-[#2A2D35] bg-[#11151B] hover:bg-[#1A1F27]"}`}>
-                                        <Bookmark size={16} fill={saved ? "white" : "none"} />
+                                    <button onClick={handleSave} className={`flex h-[50px] w-[50px] items-center justify-center rounded-xl border transition-colors ${saved ? "border-[#1C92E0] bg-[#1C92E0]" : "border-[#2A2D35] bg-[#11151B] hover:bg-[#1A1F27]"}`}>
+                                        <Bookmark size={20} className="text-white" fill={saved ? "white" : "none"} />
                                     </button>
-                                    <button onClick={() => setShowShare(true)} className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#2A2D35] bg-[#11151B] hover:bg-[#1A1F27] transition-colors">
-                                        <Share2 size={16} />
+                                    <button onClick={() => setShowShare(true)} className="flex h-[50px] w-[50px] items-center justify-center rounded-xl border border-[#2A2D35] bg-[#11151B] hover:bg-[#1A1F27] transition-colors">
+                                        <Image src="/share-icon.svg" alt="share" width={20} height={20} />
                                     </button>
                                 </div>
                             </div>
@@ -249,60 +241,41 @@ export default function CourseDetail({ course }: Props) {
 
                     <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
                         <div className="space-y-6">
-                            <section className="rounded-[24px] border border-[#1d2733] bg-[#121a24] p-6">
-                                <div className="mb-4 flex items-center justify-between gap-3">
-                                    <h2 className="text-xl font-semibold text-white">Kurs haqida</h2>
-                                    <div className="rounded-full border border-[#2EA6FF]/30 bg-[#0F2B42] px-3 py-1 text-xs font-medium text-[#7EC8FF]">
-                                        {course.difficulty?.title || "Boshlang'ich"}
-                                    </div>
-                                </div>
-                                <p className="text-[15px] leading-8 text-[#C7CFDA]">{courseBody}</p>
-
-                                <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                                    {overviewPoints.map((point: string, index: number) => (
-                                        <div key={index} className="flex items-start gap-3 rounded-2xl border border-[#24303d] bg-[#0F1520] p-3">
-                                            <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#2EA6FF]/15 text-[#2EA6FF]">
-                                                <Check size={14} />
-                                            </div>
-                                            <p className="text-sm leading-6 text-[#D8DEE8]">{point}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </section>
-
-                            <section className="rounded-[24px] border border-[#1d2733] bg-[#121a24]">
-                                <div className="border-b border-[#24303d] px-6 py-5">
-                                    <h2 className="text-xl font-semibold text-white">Darslar va bo'limlar</h2>
-                                    <p className="mt-1 text-sm text-[#8A8F98]">Har bir bo'limda videolar, tushuntirishlar va amaliy vazifalar mavjud.</p>
-                                </div>
-                                <div className="divide-y divide-[#24303d]">
-                                    {sections.slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0)).map((sec, si) => {
+                            <section className="overflow-hidden rounded-lg border border-[#1F272A] bg-[#1A1D1F]">
+                                {(() => {
+                                    let lessonIndex = 0;
+                                    return sections.slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0)).map((sec, si) => {
                                         const secLessons = lessons.filter(l => l.courseSectionId === sec.id).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+                                        const isOpen = openSection === sec.id;
                                         return (
-                                            <div key={sec.id}>
-                                                <button onClick={() => setOpenSection(openSection === sec.id ? null : sec.id)} className="flex w-full items-center justify-between px-6 py-4 text-left transition-colors hover:bg-white/5">
-                                                    <div>
-                                                        <p className="text-sm font-semibold text-white">{si + 1}. {sec.title}</p>
-                                                        <p className="mt-1 text-xs text-[#8A8F98]">{secLessons.length} ta dars</p>
-                                                    </div>
-                                                    {openSection === sec.id ? <ChevronUp size={18} className="text-slate-400" /> : <ChevronDown size={18} className="text-slate-400" />}
+                                            <div key={sec.id} className={si > 0 ? "border-t border-[#282C2E]" : ""}>
+                                                <button onClick={() => setOpenSection(isOpen ? null : sec.id)} className="flex w-full items-center justify-between px-5 py-3.5 text-left">
+                                                    <span className="text-2xl font-bold text-white">{si + 1}. {sec.title}</span>
+                                                    <Image
+                                                        src="/chevron-up.svg"
+                                                        alt="toggle"
+                                                        width={32}
+                                                        height={32}
+                                                        className={isOpen ? "" : "rotate-180"}
+                                                    />
                                                 </button>
-                                                {openSection === sec.id && (
-                                                    <div className="grid gap-4 border-t border-[#24303d] bg-[#0F1520] p-4 md:grid-cols-2">
+                                                {isOpen && (
+                                                    <div className="grid grid-cols-1 gap-6 bg-white/[0.03] p-5 sm:grid-cols-2 lg:grid-cols-3">
                                                         {secLessons.map((lesson, li) => {
                                                             const canWatch = lesson.isFree || isPurchased;
-                                                            const thumb = lesson.thumbnail ? norm(lesson.thumbnail) : "";
+                                                            const thumb = lesson.thumbnail ? norm(lesson.thumbnail) : LESSON_THUMBS[lessonIndex % LESSON_THUMBS.length];
+                                                            lessonIndex += 1;
                                                             return (
-                                                                <div key={lesson.id} className="cursor-pointer rounded-2xl border border-[#24303d] bg-[#121a24] p-3 transition-colors hover:border-[#2EA6FF]/40" onClick={() => canWatch ? router.push(`/courses/${course.id}/lesson`) : openBuy()}>
-                                                                    <div className="relative mb-3 aspect-video overflow-hidden rounded-xl bg-[#1d2733]">
-                                                                        {thumb ? <Image src={thumb} alt={lesson.title} fill unoptimized className="object-cover" /> : <div className="flex h-full items-center justify-center"><Play size={36} className="text-yellow-400/70" fill="rgba(250,204,21,0.7)" /></div>}
+                                                                <div key={lesson.id} className="cursor-pointer" onClick={() => canWatch ? router.push(`/courses/${course.id}/lesson`) : openBuy()}>
+                                                                    <div className="relative mb-4 aspect-video overflow-hidden rounded-lg border border-white/[0.16] bg-[#1A1D1F]">
+                                                                        <Image src={thumb} alt={lesson.title} fill unoptimized className="object-cover" />
                                                                         {!canWatch && <div className="absolute inset-0 flex items-center justify-center bg-black/55"><div className="rounded-full bg-black/70 p-3"><Play size={18} className="text-white" /></div></div>}
-                                                                        <div className="absolute bottom-2 left-2 flex items-center gap-1 rounded-full bg-black/55 px-2 py-1 text-[11px] text-white">
-                                                                            <Play size={10} fill="white" className="text-white" />
+                                                                        <div className="absolute bottom-3 left-3 flex items-center gap-1.5 text-sm text-white">
+                                                                            <Image src="/lesson-play-icon.svg" alt="play" width={15} height={17} />
                                                                             <span>{fmtDur(lesson.duration)}</span>
                                                                         </div>
                                                                     </div>
-                                                                    <p className="text-sm font-medium text-white">{si + 1}.{li + 1} {lesson.title}</p>
+                                                                    <p className="text-xl font-medium text-white">{si + 1}.{li + 1} {lesson.title}</p>
                                                                 </div>
                                                             );
                                                         })}
@@ -310,32 +283,14 @@ export default function CourseDetail({ course }: Props) {
                                                 )}
                                             </div>
                                         );
-                                    })}
-                                </div>
+                                    });
+                                })()}
                             </section>
 
                             <CourseReviews />
                         </div>
 
                         <aside className="space-y-4">
-                            <div className="rounded-[24px] border border-[#1d2733] bg-[#121a24] p-5">
-                                <h3 className="text-lg font-semibold text-white">Kursdan nimani olasiz?</h3>
-                                <div className="mt-4 space-y-3">
-                                    {[
-                                        "Video darslar orqali bosqichma-bosqich o'rganish",
-                                        "Amaliy topshiriqlar va mashqlar",
-                                        "Sertifikat orqali natijani ko'rsatish",
-                                    ].map((item, index) => (
-                                        <div key={index} className="flex items-start gap-3 rounded-2xl border border-[#24303d] bg-[#0F1520] p-3">
-                                            <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#2EA6FF]/15 text-[#2EA6FF]">
-                                                <Check size={14} />
-                                            </div>
-                                            <p className="text-sm leading-6 text-[#D8DEE8]">{item}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
                             <YouthCard />
 
                             {isPurchased && lastLesson && (
@@ -361,65 +316,51 @@ export default function CourseDetail({ course }: Props) {
         {showPurchase && (
             <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center px-4">
                 <button onClick={() => setShowPurchase(false)}
-                    className="absolute top-5 right-5 w-9 h-9 rounded-full bg-[#2A2D35] hover:bg-[#3A3D45] flex items-center justify-center text-white z-10 transition-colors">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    className="absolute top-5 right-5 w-10 h-10 rounded-lg bg-[#1A1D1F] hover:bg-[#23272A] flex items-center justify-center z-10 transition-colors">
+                    <Image src="/close-icon.svg" alt="close" width={20} height={20} />
                 </button>
 
-                <div className="w-full max-w-[430px] bg-[#1C2028] rounded-2xl overflow-hidden">
+                <div className="w-full max-w-[440px] rounded-xl border border-[#1F272A] bg-[#1A1D1F] overflow-hidden">
 
                     {purchaseStep === "select" && (
                         <div className="p-8 flex flex-col items-center gap-5">
-                            <div className="w-20 h-20 rounded-full bg-[#2A2D35] flex items-center justify-center">
-                                <svg viewBox="0 0 56 48" fill="none" className="w-10 h-10">
-                                    <rect x="1" y="1" width="54" height="37" rx="4" fill="#3A3D45" stroke="#555" strokeWidth="1.5"/>
-                                    <rect x="4" y="4" width="48" height="31" rx="2" fill="#1A1D24"/>
-                                    <rect x="18" y="38" width="20" height="4" rx="1.5" fill="#3A3D45"/>
-                                    <rect x="10" y="42" width="36" height="3" rx="1.5" fill="#333"/>
-                                    <circle cx="28" cy="19" r="9" fill="#F59E0B" opacity="0.9"/>
-                                    <circle cx="28" cy="19" r="7" fill="#FBBF24"/>
-                                    <text x="28" y="23" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#92400E">$</text>
-                                </svg>
-                            </div>
+                            <Image src="/payment-icon.png" alt="payment" width={100} height={100} />
 
-                            <div className="w-full bg-[#13151C] rounded-xl p-4 text-center">
-                                <p className="text-gray-400 text-xs mb-1">Xarid qilinayotgan kurs:</p>
-                                <p className="text-white font-bold text-base mb-2 line-clamp-2">{course.title}</p>
+                            <div className="w-full rounded-xl border border-[#363A3D]/40 p-4 text-center">
+                                <p className="text-[#9FA1A2] text-sm mb-2">Xarid qilinayotgan kurs:</p>
+                                <p className="text-white font-bold text-xl mb-3 line-clamp-2">{course.title}</p>
                                 <div className="flex items-center justify-center gap-2">
                                     {isFree ? (
-                                        <span className="text-green-400 font-bold text-lg">Bepul</span>
+                                        <span className="text-green-400 font-bold text-xl">Bepul</span>
                                     ) : (
                                         <>
-                                            <span className="text-xl">💰</span>
-                                            <span className="text-white font-bold text-lg">{fmtPrice(newPrice)} UZS</span>
+                                            <Image src="/wallet-icon.svg" alt="price" width={28} height={28} />
+                                            <span className="text-white font-bold text-xl">{fmtPrice(newPrice)} UZS</span>
                                         </>
                                     )}
                                 </div>
                             </div>
 
                             <div className="w-full">
-                                <p className="text-white text-sm font-medium mb-3">To&apos;lov usulini tanlang</p>
-                                <div className="grid grid-cols-2 gap-3">
+                                <p className="text-[#9DA1A3] text-base font-medium mb-3">To&apos;lov usulini tanlang</p>
+                                <div className="grid grid-cols-2 gap-x-4 gap-y-3">
                                     {payMethods.map(m => (
                                         <button key={m.id} onClick={() => setPayMethod(m.id)}
-                                            className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-colors ${payMethod === m.id ? "border-[#2196F3] bg-[#2196F3]/10" : "border-[#2A2D35] bg-[#13151C]"}`}>
-                                            <span>{m.logo}</span>
-                                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ml-2 ${payMethod === m.id ? "border-[#2196F3]" : "border-gray-500"}`}>
-                                                {payMethod === m.id && <div className="w-2.5 h-2.5 rounded-full bg-[#2196F3]" />}
-                                            </div>
+                                            className={`flex h-12 items-center justify-between rounded-lg border px-4 transition-colors ${payMethod === m.id ? "border-[#163D57] bg-[#1A2932]" : "border-[#363A3D]/40 bg-[#13181C]"}`}>
+                                            <Image src={m.logo} alt={m.id} width={m.w} height={m.h} />
+                                            <Image src={payMethod === m.id ? "/radio-selected.svg" : "/radio-unselected.svg"} alt="radio" width={24} height={24} />
                                         </button>
                                     ))}
                                 </div>
                             </div>
 
-                            <div className="flex gap-3 w-full">
+                            <div className="flex gap-4 w-full">
                                 <button onClick={() => setShowPurchase(false)}
-                                    className="flex-1 py-3 rounded-xl text-sm font-semibold bg-[#2A2D35] text-white hover:bg-[#353840] transition-colors">
+                                    className="flex-1 h-11 rounded-lg text-base font-medium bg-white text-[#14181C] hover:bg-white/90 transition-colors">
                                     Bekor qilish
                                 </button>
                                 <button onClick={handleBuy}
-                                    className="flex-1 py-3 rounded-xl text-sm font-semibold bg-[#2196F3] text-white hover:bg-[#1976D2] transition-colors">
+                                    className="flex-1 h-11 rounded-lg text-base font-medium bg-[#1C92E0] text-white hover:bg-[#1876b8] transition-colors">
                                     Davom etish
                                 </button>
                             </div>
@@ -428,13 +369,11 @@ export default function CourseDetail({ course }: Props) {
 
                     {purchaseStep === "processing" && (
                         <div className="p-8 flex flex-col items-center gap-5 text-center">
-                            <div className="w-20 h-20 rounded-full bg-yellow-500/20 flex items-center justify-center">
-                                <span className="text-4xl">⏳</span>
-                            </div>
+                            <Image src="/processing-icon.svg" alt="processing" width={140} height={140} className="-my-5" />
                             <h3 className="text-white font-bold text-2xl">Jarayonda...</h3>
-                            <p className="text-gray-400 text-sm">To&apos;lov amalga oshish jarayonida</p>
+                            <p className="text-[#9DA1A3] text-base">To&apos;lov amalga oshish jarayonida</p>
                             <button onClick={() => setShowPurchase(false)}
-                                className="w-full py-3 rounded-xl bg-[#2196F3] text-white font-semibold text-sm hover:bg-[#1976D2] transition-colors">
+                                className="w-full h-11 rounded-lg bg-[#1C92E0] text-white font-medium text-base hover:bg-[#1876b8] transition-colors">
                                 Tushunarli
                             </button>
                         </div>
